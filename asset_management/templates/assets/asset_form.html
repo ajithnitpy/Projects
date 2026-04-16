@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - Asset Management{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+<li class="breadcrumb-item"><a href="{% url 'asset_list' %}">Assets</a></li>
+{% if asset %}<li class="breadcrumb-item"><a href="{% url 'asset_detail' asset.pk %}">{{ asset.inventory_number }}</a></li>{% endif %}
+<li class="breadcrumb-item active">{{ title }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-bold mb-0">{{ title }}</h4>
+    <a href="{% if asset %}{% url 'asset_detail' asset.pk %}{% else %}{% url 'asset_list' %}{% endif %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Cancel
+    </a>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-info-circle me-2 text-primary"></i>Basic Information</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Inventory Number <span class="text-danger">*</span></label>
+                            {{ form.inventory_number }}
+                            {% for err in form.inventory_number.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Inventory Name <span class="text-danger">*</span></label>
+                            {{ form.inventory_name }}
+                            {% for err in form.inventory_name.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Category</label>
+                            {{ form.category }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Asset Image</label>
+                            {{ form.image }}
+                            {% if asset.image %}<div class="mt-2"><img src="{{ asset.image.url }}" height="60" class="rounded"></div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Description</label>
+                            {{ form.description }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-cpu me-2 text-primary"></i>Hardware Details</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Make / Brand</label>
+                            {{ form.make }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Model</label>
+                            {{ form.model }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Serial Number</label>
+                            {{ form.serial_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Vendor / Supplier</label>
+                            {{ form.vendor }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-receipt me-2 text-primary"></i>Purchase Details</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Date of Purchase</label>
+                            {{ form.date_of_purchase }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Year of Purchase</label>
+                            {{ form.year_of_purchase }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Purchase Price (&#8377;)</label>
+                            {{ form.purchase_price }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Warranty (Years)</label>
+                            {{ form.warranty_years }}
+                            <div class="form-text" id="warranty-info"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-exclamation-diamond me-2 text-warning"></i>Incident & Upgrade Details</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Incidence Details</label>
+                        {{ form.incidence_details }}
+                    </div>
+                    <div>
+                        <label class="form-label fw-semibold small">Upgradation Details</label>
+                        {{ form.upgradation_details }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-3 position-sticky" style="top: 80px">
+                <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-pin-map me-2 text-primary"></i>Location & Status</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Location</label>
+                        {{ form.location }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Department (Owner)</label>
+                        {{ form.department }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Assigned To</label>
+                        {{ form.assigned_to }}
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Working Status</label>
+                        {{ form.working_status }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Condition</label>
+                        {{ form.condition }}
+                    </div>
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>{{ title }}
+                        </button>
+                        <a href="{% if asset %}{% url 'asset_detail' asset.pk %}{% else %}{% url 'asset_list' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const purchaseDateInput = document.querySelector('[name="date_of_purchase"]');
+const warrantyInput = document.querySelector('[name="warranty_years"]');
+const warrantyInfo = document.getElementById('warranty-info');
+
+function updateWarrantyInfo() {
+    const dateVal = purchaseDateInput?.value;
+    const years = parseInt(warrantyInput?.value) || 0;
+    if (dateVal && years > 0) {
+        const purchase = new Date(dateVal);
+        const expiry = new Date(purchase);
+        expiry.setFullYear(expiry.getFullYear() + years);
+        const today = new Date();
+        const diffMs = expiry - today;
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        const expiryStr = expiry.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+        if (diffDays < 0) {
+            warrantyInfo.innerHTML = `<span class="text-danger">Expired on ${expiryStr}</span>`;
+        } else if (diffDays <= 90) {
+            warrantyInfo.innerHTML = `<span class="text-warning">Expires ${expiryStr} (${diffDays} days)</span>`;
+        } else {
+            warrantyInfo.innerHTML = `<span class="text-success">Active until ${expiryStr} (${diffDays} days)</span>`;
+        }
+    } else {
+        warrantyInfo.textContent = '';
+    }
+}
+
+purchaseDateInput?.addEventListener('change', updateWarrantyInfo);
+warrantyInput?.addEventListener('input', updateWarrantyInfo);
+document.addEventListener('DOMContentLoaded', updateWarrantyInfo);
+
+// Auto-fill year from date
+purchaseDateInput?.addEventListener('change', function() {
+    const yearInput = document.querySelector('[name="year_of_purchase"]');
+    if (this.value && yearInput && !yearInput.value) {
+        yearInput.value = new Date(this.value).getFullYear();
+    }
+});
+</script>
+{% endblock %}

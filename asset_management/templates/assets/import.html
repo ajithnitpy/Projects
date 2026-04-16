@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Import Data - Asset Management{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+<li class="breadcrumb-item active">Import</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Import Data</h4>
+        <p class="text-muted mb-0 small">Bulk import assets, categories, locations, or departments from CSV or Excel files.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-cloud-upload me-2 text-primary"></i>Upload File</div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Import Type</label>
+                        {{ form.import_type }}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small">File (CSV or Excel)</label>
+                        <div class="border-2 border-dashed rounded-3 p-4 text-center" style="border-style:dashed!important;border-color:#cbd5e1!important;background:#f8fafc">
+                            {{ form.file }}
+                            <div class="mt-2 text-muted small">Accepted formats: .csv, .xlsx, .xls</div>
+                        </div>
+                        {% for err in form.file.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-upload me-1"></i>Import Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card mb-3">
+            <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-cloud-download me-2 text-success"></i>Export Data</div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Download existing data as Excel or CSV for editing and re-importing.</p>
+                <div class="row g-2">
+                    {% for type, label in export_types %}
+                    <div class="col-6">
+                        <div class="card border-0 bg-light p-3 text-center">
+                            <div class="fw-semibold small mb-2">{{ label }}</div>
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="{% url 'export_assets' %}?type={{ type }}&format=xlsx" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel me-1"></i>Excel</a>
+                                <a href="{% url 'export_assets' %}?type={{ type }}&format=csv" class="btn btn-sm btn-outline-secondary"><i class="bi bi-filetype-csv me-1"></i>CSV</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    {% for type, label in types_list %}{% endfor %}
+                    <div class="col-6">
+                        <div class="card border-0 bg-light p-3 text-center">
+                            <div class="fw-semibold small mb-2">Assets</div>
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="{% url 'export_assets' %}?type=assets&format=xlsx" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Excel</a>
+                                <a href="{% url 'export_assets' %}?type=assets&format=csv" class="btn btn-sm btn-outline-secondary"><i class="bi bi-filetype-csv"></i> CSV</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card border-0 bg-light p-3 text-center">
+                            <div class="fw-semibold small mb-2">Categories</div>
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="{% url 'export_assets' %}?type=categories&format=xlsx" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Excel</a>
+                                <a href="{% url 'export_assets' %}?type=categories&format=csv" class="btn btn-sm btn-outline-secondary"><i class="bi bi-filetype-csv"></i> CSV</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card border-0 bg-light p-3 text-center">
+                            <div class="fw-semibold small mb-2">Locations</div>
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="{% url 'export_assets' %}?type=locations&format=xlsx" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Excel</a>
+                                <a href="{% url 'export_assets' %}?type=locations&format=csv" class="btn btn-sm btn-outline-secondary"><i class="bi bi-filetype-csv"></i> CSV</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card border-0 bg-light p-3 text-center">
+                            <div class="fw-semibold small mb-2">Departments</div>
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="{% url 'export_assets' %}?type=departments&format=xlsx" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Excel</a>
+                                <a href="{% url 'export_assets' %}?type=departments&format=csv" class="btn btn-sm btn-outline-secondary"><i class="bi bi-filetype-csv"></i> CSV</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-question-circle me-2 text-info"></i>Import Format Guide</div>
+            <div class="card-body">
+                <div class="accordion accordion-flush" id="guideAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 small fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#assetGuide">Asset CSV Columns</button>
+                        </h2>
+                        <div id="assetGuide" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
+                            <div class="accordion-body py-2">
+                                <code class="small">inventory_number, inventory_name, category, make, model, serial_number, date_of_purchase (YYYY-MM-DD), year_of_purchase, purchase_price, vendor, location, department, assigned_to, working_status (active/inactive/under_repair/in_store/transferred), condition (working/write_off/condemned/obsolete/disposed), warranty_years</code>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 small fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#catGuide">Category Columns</button>
+                        </h2>
+                        <div id="catGuide" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
+                            <div class="accordion-body py-2"><code class="small">name, description</code></div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2 small fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#locGuide">Location Columns</button>
+                        </h2>
+                        <div id="locGuide" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
+                            <div class="accordion-body py-2"><code class="small">name, building, floor, room, address</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

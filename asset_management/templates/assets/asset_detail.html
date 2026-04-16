@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load asset_tags %}
+{% block title %}{{ asset.inventory_name }} - Asset Management{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+<li class="breadcrumb-item"><a href="{% url 'asset_list' %}">Assets</a></li>
+<li class="breadcrumb-item active">{{ asset.inventory_number }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-start justify-content-between mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">{{ asset.inventory_name }}</h4>
+        <p class="text-muted mb-0 small">Inventory #: <strong>{{ asset.inventory_number }}</strong> &bull; ID: {{ asset.inventory_id }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if user.is_superuser or user.profile.role.can_edit_asset %}
+        <a href="{% url 'asset_edit' asset.pk %}" class="btn btn-warning"><i class="bi bi-pencil me-1"></i>Edit</a>
+        {% endif %}
+        {% if user.is_superuser or user.profile.role.can_delete_asset %}
+        <a href="{% url 'asset_delete' asset.pk %}" class="btn btn-outline-danger"><i class="bi bi-trash me-1"></i>Delete</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Main Info -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-info-circle me-2 text-primary"></i>Asset Details</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% if asset.image %}
+                    <div class="col-12 mb-3">
+                        <img src="{{ asset.image.url }}" alt="{{ asset.inventory_name }}" class="rounded-3 shadow-sm" style="max-height:250px;max-width:100%;object-fit:cover">
+                    </div>
+                    {% endif %}
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold">Inventory Number</label>
+                        <p class="mb-0 fw-semibold">{{ asset.inventory_number }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold">Inventory Name</label>
+                        <p class="mb-0">{{ asset.inventory_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold">Category</label>
+                        <p class="mb-0">{{ asset.category|default:'-' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold">Make / Model</label>
+                        <p class="mb-0">{{ asset.make|default:'-' }} / {{ asset.model|default:'-' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold">Serial Number</label>
+                        <p class="mb-0">{{ asset.serial_number|default:'-' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold">Vendor</label>
+                        <p class="mb-0">{{ asset.vendor|default:'-' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold">Date of Purchase</label>
+                        <p class="mb-0">{{ asset.date_of_purchase|default:'-' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold">Year of Purchase</label>
+                        <p class="mb-0">{{ asset.year_of_purchase|default:'-' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold">Purchase Price</label>
+                        <p class="mb-0">{% if asset.purchase_price %}&#8377; {{ asset.purchase_price|floatformat:2 }}{% else %}-{% endif %}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-semibold">Assigned To</label>
+                        <p class="mb-0">{{ asset.assigned_to|default:'-' }}</p>
+                    </div>
+                    {% if asset.description %}
+                    <div class="col-12">
+                        <label class="text-muted small fw-semibold">Description</label>
+                        <p class="mb-0">{{ asset.description }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Incidence Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+                <span class="fw-semibold"><i class="bi bi-exclamation-diamond me-2 text-warning"></i>Incidents</span>
+                {% if user.is_superuser or user.profile.role.can_edit_asset %}
+                <a href="{% url 'add_incident' asset.pk %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-plus me-1"></i>Report Incident</a>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                {% for incident in incidents %}
+                <div class="p-3 border-bottom">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="fw-semibold">{{ incident.title }}</span>
+                            <span class="badge ms-2 {% if incident.severity == 'critical' %}bg-danger{% elif incident.severity == 'high' %}bg-warning text-dark{% elif incident.severity == 'medium' %}bg-info{% else %}bg-secondary{% endif %}">{{ incident.severity|capfirst }}</span>
+                        </div>
+                        <small class="text-muted">{{ incident.reported_at|date:"M d, Y" }}</small>
+                    </div>
+                    <p class="mb-0 small text-muted mt-1">{{ incident.description }}</p>
+                    {% if incident.resolved_at %}<p class="mb-0 small text-success mt-1"><i class="bi bi-check-circle me-1"></i>Resolved: {{ incident.resolved_at|date:"M d, Y" }}</p>{% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4"><i class="bi bi-check-circle fs-3 d-block mb-2 text-success"></i>No incidents reported</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Upgrades -->
+        <div class="card">
+            <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+                <span class="fw-semibold"><i class="bi bi-arrow-up-circle me-2 text-info"></i>Upgrades</span>
+                {% if user.is_superuser or user.profile.role.can_edit_asset %}
+                <a href="{% url 'add_upgrade' asset.pk %}" class="btn btn-sm btn-outline-info"><i class="bi bi-plus me-1"></i>Add Upgrade</a>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                {% for upgrade in upgrades %}
+                <div class="p-3 border-bottom">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-semibold">{{ upgrade.title }}</span>
+                        <small class="text-muted">{{ upgrade.upgrade_date|date:"M d, Y" }}</small>
+                    </div>
+                    <p class="mb-0 small text-muted mt-1">{{ upgrade.description }}</p>
+                    {% if upgrade.cost %}<p class="mb-0 small mt-1">Cost: <strong>&#8377;{{ upgrade.cost }}</strong></p>{% endif %}
+                    {% if upgrade.performed_by %}<p class="mb-0 small text-muted">By: {{ upgrade.performed_by }}</p>{% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4"><i class="bi bi-tools fs-3 d-block mb-2"></i>No upgrades recorded</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-activity me-2 text-primary"></i>Status & Condition</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="text-muted small fw-semibold d-block mb-1">Condition</label>
+                    <span class="badge badge-{{ asset.condition }} px-3 py-2 fs-6">{{ asset.get_condition_display }}</span>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small fw-semibold d-block mb-1">Working Status</label>
+                    <span class="badge bg-secondary px-3 py-2">{{ asset.get_working_status_display }}</span>
+                </div>
+                <div>
+                    <label class="text-muted small fw-semibold d-block mb-1">Warranty</label>
+                    {% with ws=asset.warranty_status %}
+                    {% if ws == 'No Warranty' %}
+                    <span class="text-muted">No warranty info</span>
+                    {% else %}
+                    <span class="fw-semibold {% if ws == 'Active' %}warranty-active{% elif ws == 'Expiring Soon' %}warranty-expiring{% else %}warranty-expired{% endif %}">
+                        <i class="bi bi-shield{% if ws == 'Active' %}-check{% elif ws == 'Expiring Soon' %}-exclamation{% else %}-x{% endif %} me-1"></i>{{ ws }}
+                    </span>
+                    {% if asset.warranty_expiry_date %}
+                    <div class="text-muted small mt-1">Expires: {{ asset.warranty_expiry_date|date:"M d, Y" }}</div>
+                    {% endif %}
+                    {% if asset.warranty_days_remaining is not None %}
+                    <div class="text-muted small">
+                        {% if asset.warranty_days_remaining >= 0 %}{{ asset.warranty_days_remaining }} days remaining
+                        {% else %}Expired {{ asset.warranty_days_remaining|abs_value }} days ago{% endif %}
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-pin-map me-2 text-primary"></i>Location & Ownership</div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <label class="text-muted small fw-semibold">Location</label>
+                    <p class="mb-0">{{ asset.location|default:'-' }}</p>
+                </div>
+                <div class="mb-2">
+                    <label class="text-muted small fw-semibold">Department (Owner)</label>
+                    <p class="mb-0">{{ asset.department|default:'-' }}</p>
+                </div>
+                <div>
+                    <label class="text-muted small fw-semibold">Assigned To</label>
+                    <p class="mb-0">{{ asset.assigned_to|default:'-' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-white fw-semibold py-3"><i class="bi bi-clock-history me-2 text-primary"></i>Record Info</div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <label class="text-muted small fw-semibold">Created</label>
+                    <p class="mb-0 small">{{ asset.created_at|date:"M d, Y H:i" }}</p>
+                    {% if asset.created_by %}<p class="mb-0 small text-muted">by {{ asset.created_by.get_full_name|default:asset.created_by.username }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="text-muted small fw-semibold">Last Updated</label>
+                    <p class="mb-0 small">{{ asset.updated_at|date:"M d, Y H:i" }}</p>
+                    {% if asset.updated_by %}<p class="mb-0 small text-muted">by {{ asset.updated_by.get_full_name|default:asset.updated_by.username }}</p>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

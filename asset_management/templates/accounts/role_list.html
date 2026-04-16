@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Roles & Access Control - Asset Management{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+<li class="breadcrumb-item active">Roles & Access</li>
+{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Roles & Access Control</h4>
+        <p class="text-muted mb-0 small">Manage user roles and their permissions.</p>
+    </div>
+    <a href="{% url 'role_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Role</a>
+</div>
+
+<div class="row g-3">
+    {% for role in roles %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+                <div>
+                    <span class="fw-bold">{{ role.name }}</span>
+                    <span class="badge ms-2 {% if role.role_type == 'admin' %}bg-danger{% elif role.role_type == 'manager' %}bg-primary{% elif role.role_type == 'editor' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ role.get_role_type_display }}</span>
+                </div>
+                <div class="d-flex gap-1">
+                    <a href="{% url 'role_edit' role.pk %}" class="btn btn-sm btn-outline-warning btn-action"><i class="bi bi-pencil"></i></a>
+                    <a href="{% url 'role_delete' role.pk %}" class="btn btn-sm btn-outline-danger btn-action"><i class="bi bi-trash"></i></a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if role.description %}<p class="text-muted small mb-3">{{ role.description }}</p>{% endif %}
+                <div class="row g-1">
+                    <div class="col-6 small {% if role.can_view_asset %}text-success{% else %}text-muted{% endif %}">
+                        <i class="bi bi-{% if role.can_view_asset %}check{% else %}x{% endif %}-circle me-1"></i>View Assets
+                    </div>
+                    <div class="col-6 small {% if role.can_add_asset %}text-success{% else %}text-muted{% endif %}">
+                        <i class="bi bi-{% if role.can_add_asset %}check{% else %}x{% endif %}-circle me-1"></i>Add Assets
+                    </div>
+                    <div class="col-6 small {% if role.can_edit_asset %}text-success{% else %}text-muted{% endif %}">
+                        <i class="bi bi-{% if role.can_edit_asset %}check{% else %}x{% endif %}-circle me-1"></i>Edit Assets
+                    </div>
+                    <div class="col-6 small {% if role.can_delete_asset %}text-success{% else %}text-muted{% endif %}">
+                        <i class="bi bi-{% if role.can_delete_asset %}check{% else %}x{% endif %}-circle me-1"></i>Delete Assets
+                    </div>
+                    <div class="col-6 small {% if role.can_import_export %}text-success{% else %}text-muted{% endif %}">
+                        <i class="bi bi-{% if role.can_import_export %}check{% else %}x{% endif %}-circle me-1"></i>Import/Export
+                    </div>
+                    <div class="col-6 small {% if role.can_manage_users %}text-success{% else %}text-muted{% endif %}">
+                        <i class="bi bi-{% if role.can_manage_users %}check{% else %}x{% endif %}-circle me-1"></i>Manage Users
+                    </div>
+                    <div class="col-6 small {% if role.can_manage_roles %}text-success{% else %}text-muted{% endif %}">
+                        <i class="bi bi-{% if role.can_manage_roles %}check{% else %}x{% endif %}-circle me-1"></i>Manage Roles
+                    </div>
+                    <div class="col-6 small {% if role.can_view_logs %}text-success{% else %}text-muted{% endif %}">
+                        <i class="bi bi-{% if role.can_view_logs %}check{% else %}x{% endif %}-circle me-1"></i>View Logs
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-top text-muted" style="font-size:0.72rem">
+                    Created: {{ role.created_at|date:"M d, Y" }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5 text-muted">
+        <i class="bi bi-shield-x fs-1 d-block mb-2"></i>No roles defined. <a href="{% url 'role_create' %}">Create one</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

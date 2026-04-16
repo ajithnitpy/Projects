@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Users - Asset Management{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+<li class="breadcrumb-item active">Users</li>
+{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-bold mb-0">User Management</h4>
+    <a href="{% url 'user_create' %}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Add User</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="search" value="{{ search }}" class="form-control form-control-sm" placeholder="Search users..." style="max-width:300px">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search"></i></button>
+            <a href="{% url 'user_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-lg"></i></a>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr><th>User</th><th>Email</th><th>Role</th><th>Department</th><th>Employee ID</th><th>Active</th><th>Joined</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for user_obj in users %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if user_obj.profile.avatar %}
+                            <img src="{{ user_obj.profile.avatar.url }}" class="rounded-circle" width="32" height="32" style="object-fit:cover">
+                            {% else %}
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:32px;height:32px;font-size:0.75rem;font-weight:700">{{ user_obj.username|first|upper }}</div>
+                            {% endif %}
+                            <div>
+                                <div class="fw-semibold small">{{ user_obj.get_full_name|default:user_obj.username }}</div>
+                                <div class="text-muted" style="font-size:0.7rem">{{ user_obj.username }}{% if user_obj.is_superuser %} <span class="badge bg-danger-subtle text-danger">Superuser</span>{% endif %}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="small">{{ user_obj.email|default:'-' }}</td>
+                    <td>
+                        {% with role=user_obj.profile.role %}
+                        {% if role %}<span class="badge bg-primary-subtle text-primary">{{ role.name }}</span>
+                        {% else %}<span class="text-muted small">-</span>{% endif %}
+                        {% endwith %}
+                    </td>
+                    <td class="small">{{ user_obj.profile.department|default:'-' }}</td>
+                    <td class="small">{{ user_obj.profile.employee_id|default:'-' }}</td>
+                    <td>
+                        {% if user_obj.is_active and user_obj.profile.is_active %}
+                        <span class="badge bg-success-subtle text-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ user_obj.date_joined|date:"M d, Y" }}</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'user_edit' user_obj.pk %}" class="btn btn-sm btn-outline-warning btn-action"><i class="bi bi-pencil"></i></a>
+                            {% if user_obj != request.user %}
+                            <a href="{% url 'user_delete' user_obj.pk %}" class="btn btn-sm btn-outline-danger btn-action"><i class="bi bi-trash"></i></a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center py-5 text-muted"><i class="bi bi-people fs-1 d-block mb-2"></i>No users found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if users.has_other_pages %}
+    <div class="card-footer bg-white">
+        <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
+            {% if users.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ users.previous_page_number }}">&laquo;</a></li>{% endif %}
+            {% for num in users.paginator.page_range %}
+            {% if users.number == num %}<li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > users.number|add:'-3' and num < users.number|add:'3' %}<li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>{% endif %}
+            {% endfor %}
+            {% if users.has_next %}<li class="page-item"><a class="page-link" href="?page={{ users.next_page_number }}">&raquo;</a></li>{% endif %}
+        </ul></nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

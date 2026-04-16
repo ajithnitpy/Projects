@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Locations - Asset Management{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+<li class="breadcrumb-item active">Locations</li>
+{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-bold mb-0">Locations</h4>
+    <a href="{% url 'location_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Location</a>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr><th>Name</th><th>Building</th><th>Floor</th><th>Room</th><th>Assets</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for loc in locations %}
+                <tr>
+                    <td class="fw-semibold">{{ loc.name }}</td>
+                    <td>{{ loc.building|default:'-' }}</td>
+                    <td>{{ loc.floor|default:'-' }}</td>
+                    <td>{{ loc.room|default:'-' }}</td>
+                    <td><span class="badge bg-primary-subtle text-primary">{{ loc.asset_count }}</span></td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'location_edit' loc.pk %}" class="btn btn-sm btn-outline-warning btn-action"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'location_delete' loc.pk %}" class="btn btn-sm btn-outline-danger btn-action"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-5 text-muted"><i class="bi bi-geo-alt fs-1 d-block mb-2"></i>No locations yet. <a href="{% url 'location_create' %}">Add one</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
