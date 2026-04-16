@@ -25,4 +25,5 @@ urlpatterns = [
     path('departments/<int:pk>/edit/', views.department_edit, name='department_edit'),
     path('departments/<int:pk>/delete/', views.department_delete, name='department_delete'),
     path('logs/', views.activity_log_list, name='activity_log_list'),
+    path('download-zip/', views.download_zip, name='download_zip'),
 ]

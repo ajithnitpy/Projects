@@ -125,6 +125,9 @@
         <a href="{% url 'export_assets' %}" class="nav-link">
             <i class="bi bi-cloud-download"></i> Export
         </a>
+        <a href="{% url 'download_zip' %}" class="nav-link {% if request.resolver_match.url_name == 'download_zip' %}active{% endif %}">
+            <i class="bi bi-file-zip"></i> Download ZIP
+        </a>
         {% endif %}
 
         {% if user.is_superuser or user.profile.role.can_manage_users %}

@@ -4,8 +4,12 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
+from django.utils import timezone
 from datetime import date
 import tablib
+import zipfile
+import io
+import os
 
 from .models import Asset, Category, Location, Department, AssetIncident, AssetUpgrade, ActivityLog
 from .forms import (
@@ -472,3 +476,157 @@ def activity_log_list(request):
         'logs': logs_page,
         'action_choices': ActivityLog.ACTION_CHOICES,
     })
+
+
+@login_required
+@permission_required('can_import_export')
+def download_zip(request):
+    buf = io.BytesIO()
+    timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        # --- Excel workbook with all data sheets ---
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+        from openpyxl.utils import get_column_letter
+
+        wb = openpyxl.Workbook()
+
+        header_font = Font(bold=True, color='FFFFFF')
+        header_fill = PatternFill(fill_type='solid', fgColor='1A73E8')
+
+        def write_sheet(ws, headers, rows):
+            ws.append(headers)
+            for cell in ws[1]:
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.alignment = Alignment(horizontal='center')
+            for row in rows:
+                ws.append(row)
+            for col_idx, _ in enumerate(headers, 1):
+                ws.column_dimensions[get_column_letter(col_idx)].width = 20
+
+        # Assets sheet
+        ws_assets = wb.active
+        ws_assets.title = 'Assets'
+        asset_headers = [
+            'ID', 'Inventory Number', 'Inventory Name', 'Category', 'Make', 'Model',
+            'Serial Number', 'Date of Purchase', 'Year of Purchase', 'Purchase Price',
+            'Vendor', 'Location', 'Department', 'Assigned To',
+            'Working Status', 'Condition', 'Warranty (Years)',
+            'Warranty Status', 'Warranty Expiry',
+            'Incidence Details', 'Upgradation Details', 'Created At',
+        ]
+        asset_rows = []
+        for a in Asset.objects.select_related('category', 'location', 'department').all():
+            asset_rows.append([
+                a.inventory_id,
+                a.inventory_number,
+                a.inventory_name,
+                str(a.category) if a.category else '',
+                a.make,
+                a.model,
+                a.serial_number,
+                str(a.date_of_purchase) if a.date_of_purchase else '',
+                a.year_of_purchase or '',
+                float(a.purchase_price) if a.purchase_price else '',
+                a.vendor,
+                str(a.location) if a.location else '',
+                str(a.department) if a.department else '',
+                a.assigned_to,
+                a.get_working_status_display(),
+                a.get_condition_display(),
+                a.warranty_years,
+                a.warranty_status,
+                str(a.warranty_expiry_date) if a.warranty_expiry_date else '',
+                a.incidence_details,
+                a.upgradation_details,
+                a.created_at.strftime('%Y-%m-%d %H:%M') if a.created_at else '',
+            ])
+        write_sheet(ws_assets, asset_headers, asset_rows)
+
+        # Categories sheet
+        ws_cat = wb.create_sheet('Categories')
+        write_sheet(ws_cat, ['ID', 'Name', 'Description', 'Asset Count'],
+            [[c.id, c.name, c.description, c.assets.count()] for c in Category.objects.all()])
+
+        # Locations sheet
+        ws_loc = wb.create_sheet('Locations')
+        write_sheet(ws_loc, ['ID', 'Name', 'Building', 'Floor', 'Room', 'Address', 'Asset Count'],
+            [[l.id, l.name, l.building, l.floor, l.room, l.address, l.assets.count()]
+             for l in Location.objects.all()])
+
+        # Departments sheet
+        ws_dept = wb.create_sheet('Departments')
+        write_sheet(ws_dept, ['ID', 'Name', 'Head', 'Description', 'Asset Count'],
+            [[d.id, d.name, d.head, d.description, d.assets.count()]
+             for d in Department.objects.all()])
+
+        # Incidents sheet
+        ws_inc = wb.create_sheet('Incidents')
+        write_sheet(ws_inc,
+            ['Asset Number', 'Asset Name', 'Title', 'Severity', 'Description', 'Reported By', 'Reported At', 'Resolved At'],
+            [[i.asset.inventory_number, i.asset.inventory_name, i.title, i.severity,
+              i.description, str(i.reported_by) if i.reported_by else '',
+              i.reported_at.strftime('%Y-%m-%d') if i.reported_at else '',
+              i.resolved_at.strftime('%Y-%m-%d') if i.resolved_at else '']
+             for i in AssetIncident.objects.select_related('asset', 'reported_by').all()])
+
+        # Upgrades sheet
+        ws_upg = wb.create_sheet('Upgrades')
+        write_sheet(ws_upg,
+            ['Asset Number', 'Asset Name', 'Title', 'Description', 'Upgrade Date', 'Cost', 'Performed By'],
+            [[u.asset.inventory_number, u.asset.inventory_name, u.title, u.description,
+              str(u.upgrade_date), float(u.cost) if u.cost else '', u.performed_by]
+             for u in AssetUpgrade.objects.select_related('asset').all()])
+
+        # Activity Logs sheet
+        ws_log = wb.create_sheet('Activity Logs')
+        write_sheet(ws_log,
+            ['Timestamp', 'User', 'Action', 'Model', 'Object', 'IP Address'],
+            [[l.timestamp.strftime('%Y-%m-%d %H:%M'), str(l.user) if l.user else 'System',
+              l.get_action_display(), l.model_name, l.object_repr, l.ip_address or '']
+             for l in ActivityLog.objects.select_related('user').all()[:500]])
+
+        # Save workbook into zip
+        excel_buf = io.BytesIO()
+        wb.save(excel_buf)
+        zf.writestr(f'data/asset_management_data_{timestamp}.xlsx', excel_buf.getvalue())
+
+        # --- Asset images ---
+        from django.conf import settings
+        images_added = 0
+        for asset in Asset.objects.filter(image__isnull=False).exclude(image=''):
+            img_path = os.path.join(settings.MEDIA_ROOT, asset.image.name)
+            if os.path.isfile(img_path):
+                ext = os.path.splitext(asset.image.name)[1]
+                archive_name = f'images/{asset.inventory_number}{ext}'
+                zf.write(img_path, archive_name)
+                images_added += 1
+
+        # --- README ---
+        readme = f"""AssetTrack - Asset Management System Export
+============================================
+Generated: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}
+Exported by: {request.user.get_full_name() or request.user.username}
+
+Contents:
+  data/asset_management_data_{timestamp}.xlsx
+    - Assets         ({Asset.objects.count()} records)
+    - Categories     ({Category.objects.count()} records)
+    - Locations      ({Location.objects.count()} records)
+    - Departments    ({Department.objects.count()} records)
+    - Incidents      ({AssetIncident.objects.count()} records)
+    - Upgrades       ({AssetUpgrade.objects.count()} records)
+    - Activity Logs  (last 500 records)
+
+  images/           ({images_added} asset images)
+"""
+        zf.writestr('README.txt', readme)
+
+    log_activity(request.user, 'export', 'Project ZIP', changes='Full project ZIP download', request=request)
+
+    buf.seek(0)
+    response = HttpResponse(buf.read(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="assettrack_export_{timestamp}.zip"'
+    return response
