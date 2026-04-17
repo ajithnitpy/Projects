@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import Role, UserProfile
+from assets.models import Department
 
 
 class LoginForm(AuthenticationForm):
@@ -52,10 +53,15 @@ class UserProfileForm(forms.ModelForm):
         widgets = {
             'role': forms.Select(attrs={'class': 'form-select'}),
             'employee_id': forms.TextInput(attrs={'class': 'form-control'}),
-            'department': forms.TextInput(attrs={'class': 'form-control'}),
+            'department': forms.Select(attrs={'class': 'form-select'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
             'avatar': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['department'].queryset = Department.objects.order_by('name')
+        self.fields['department'].empty_label = '— No department restriction —'
 
 
 class RoleForm(forms.ModelForm):

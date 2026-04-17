@@ -7,6 +7,16 @@
 {% endblock %}
 
 {% block content %}
+{% if scope_dept %}
+<div class="alert d-flex align-items-center gap-3 mb-4" style="background:#e8f0fe;border:none;border-left:4px solid #1a73e8;border-radius:10px">
+    <i class="bi bi-building-check fs-4 text-primary"></i>
+    <div>
+        <strong class="text-primary">Department View: {{ scope_dept.name }}</strong>
+        <div class="small text-muted">You are viewing assets assigned to your department only.</div>
+    </div>
+</div>
+{% endif %}
+
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
         <h4 class="fw-bold mb-1">Dashboard</h4>

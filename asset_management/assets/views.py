@@ -56,31 +56,51 @@ def permission_required(perm):
     return decorator
 
 
+def _dept_scope(request):
+    """Return the Department to scope to, or None if user sees all assets."""
+    try:
+        profile = request.user.profile
+        if profile.is_department_scoped:
+            return profile.department
+    except Exception:
+        pass
+    return None
+
+
 @login_required
 def dashboard(request):
-    total_assets = Asset.objects.count()
-    working_assets = Asset.objects.filter(condition='working').count()
-    condemned_assets = Asset.objects.filter(condition='condemned').count()
-    disposed_assets = Asset.objects.filter(condition='disposed').count()
-    write_off_assets = Asset.objects.filter(condition='write_off').count()
-    obsolete_assets = Asset.objects.filter(condition='obsolete').count()
+    scope_dept = _dept_scope(request)
+    qs = Asset.objects.filter(department=scope_dept) if scope_dept else Asset.objects.all()
+
+    total_assets = qs.count()
+    working_assets = qs.filter(condition='working').count()
+    condemned_assets = qs.filter(condition='condemned').count()
+    disposed_assets = qs.filter(condition='disposed').count()
+    write_off_assets = qs.filter(condition='write_off').count()
+    obsolete_assets = qs.filter(condition='obsolete').count()
 
     warranty_expired = 0
     warranty_expiring_soon = 0
-    for asset in Asset.objects.filter(warranty_years__gt=0, date_of_purchase__isnull=False):
+    for asset in qs.filter(warranty_years__gt=0, date_of_purchase__isnull=False):
         ws = asset.warranty_status
         if ws == 'Expired':
             warranty_expired += 1
         elif ws == 'Expiring Soon':
             warranty_expiring_soon += 1
 
-    assets_by_category = Category.objects.annotate(count=Count('assets')).order_by('-count')[:8]
-    assets_by_location = Location.objects.annotate(count=Count('assets')).order_by('-count')[:8]
-    assets_by_department = Department.objects.annotate(count=Count('assets')).order_by('-count')[:8]
-    assets_by_condition = list(Asset.objects.values('condition').annotate(count=Count('condition')))
-    assets_by_status = list(Asset.objects.values('working_status').annotate(count=Count('working_status')))
+    if scope_dept:
+        assets_by_category = Category.objects.filter(assets__department=scope_dept).annotate(count=Count('assets')).order_by('-count')[:8]
+        assets_by_location = Location.objects.filter(assets__department=scope_dept).annotate(count=Count('assets')).order_by('-count')[:8]
+        assets_by_department = Department.objects.filter(pk=scope_dept.pk).annotate(count=Count('assets'))
+    else:
+        assets_by_category = Category.objects.annotate(count=Count('assets')).order_by('-count')[:8]
+        assets_by_location = Location.objects.annotate(count=Count('assets')).order_by('-count')[:8]
+        assets_by_department = Department.objects.annotate(count=Count('assets')).order_by('-count')[:8]
 
-    recent_assets = Asset.objects.select_related('category', 'location', 'department').order_by('-created_at')[:10]
+    assets_by_condition = list(qs.values('condition').annotate(count=Count('condition')))
+    assets_by_status = list(qs.values('working_status').annotate(count=Count('working_status')))
+
+    recent_assets = qs.select_related('category', 'location', 'department').order_by('-created_at')[:10]
     recent_logs = ActivityLog.objects.select_related('user').order_by('-timestamp')[:10]
 
     context = {
@@ -102,6 +122,7 @@ def dashboard(request):
         'assets_by_status': assets_by_status,
         'recent_assets': recent_assets,
         'recent_logs': recent_logs,
+        'scope_dept': scope_dept,
     }
     return render(request, 'assets/dashboard.html', context)
 
@@ -109,14 +130,19 @@ def dashboard(request):
 @login_required
 @permission_required('can_view_asset')
 def asset_list(request):
+    scope_dept = _dept_scope(request)
     form = AssetFilterForm(request.GET)
+
     assets = Asset.objects.select_related('category', 'location', 'department').all()
+    if scope_dept:
+        assets = assets.filter(department=scope_dept)
 
     if form.is_valid():
         search = form.cleaned_data.get('search')
         category = form.cleaned_data.get('category')
         location = form.cleaned_data.get('location')
-        department = form.cleaned_data.get('department')
+        # Department filter from the form only applies when user is not scoped
+        department = form.cleaned_data.get('department') if not scope_dept else None
         condition = form.cleaned_data.get('condition')
         working_status = form.cleaned_data.get('working_status')
 
@@ -148,6 +174,7 @@ def asset_list(request):
         'assets': assets_page,
         'form': form,
         'total_count': assets.count(),
+        'scope_dept': scope_dept,
     })
 
 
@@ -155,6 +182,10 @@ def asset_list(request):
 @permission_required('can_view_asset')
 def asset_detail(request, pk):
     asset = get_object_or_404(Asset, pk=pk)
+    scope_dept = _dept_scope(request)
+    if scope_dept and asset.department != scope_dept:
+        messages.error(request, 'You do not have access to this asset.')
+        return redirect('asset_list')
     incidents = asset.incidents.all().order_by('-reported_at')
     upgrades = asset.upgrades.all().order_by('-upgrade_date')
     log_activity(request.user, 'view', 'Asset', asset, request=request)
