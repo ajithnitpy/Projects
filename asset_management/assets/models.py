@@ -106,9 +106,7 @@ class Asset(models.Model):
     @property
     def warranty_expiry_date(self):
         if self.date_of_purchase and self.warranty_years:
-            from dateutil.relativedelta import relativedelta
             try:
-                from dateutil.relativedelta import relativedelta
                 return self.date_of_purchase.replace(year=self.date_of_purchase.year + self.warranty_years)
             except ValueError:
                 return None
