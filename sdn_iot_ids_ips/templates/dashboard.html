@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Dashboard · SDN IoT AI-IDS/IPS</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body class="dark">
+  <nav class="navbar">
+    <span class="brand">SDN IoT AI-IDS/IPS</span>
+    <a href="/" class="nav-link">Home</a>
+    <span id="conn-status" class="badge badge-red">Disconnected</span>
+  </nav>
+
+  <!-- ── Metric scorecards ── -->
+  <section class="scorecards">
+    <div class="scorecard" id="sc-accuracy">
+      <span class="sc-label">Accuracy</span>
+      <span class="sc-value" id="val-accuracy">—</span>
+    </div>
+    <div class="scorecard" id="sc-f1">
+      <span class="sc-label">F1 Macro</span>
+      <span class="sc-value" id="val-f1">—</span>
+    </div>
+    <div class="scorecard" id="sc-recall">
+      <span class="sc-label">Recall</span>
+      <span class="sc-value" id="val-recall">—</span>
+    </div>
+    <div class="scorecard" id="sc-mse">
+      <span class="sc-label">MSE</span>
+      <span class="sc-value" id="val-mse">—</span>
+    </div>
+    <div class="scorecard">
+      <span class="sc-label">Total Events</span>
+      <span class="sc-value" id="val-total">0</span>
+    </div>
+    <div class="scorecard alert-card">
+      <span class="sc-label">Attacks Detected</span>
+      <span class="sc-value" id="val-attacks">0</span>
+    </div>
+    <div class="scorecard">
+      <span class="sc-label">Active Blocks</span>
+      <span class="sc-value" id="val-mitigations">0</span>
+    </div>
+    <div class="scorecard">
+      <span class="sc-label">Snort Alerts</span>
+      <span class="sc-value" id="val-snort">0</span>
+    </div>
+    <div class="scorecard">
+      <span class="sc-label">Suricata Alerts</span>
+      <span class="sc-value" id="val-suricata">0</span>
+    </div>
+  </section>
+
+  <!-- ── Action breakdown ── -->
+  <section class="panels">
+    <div class="panel">
+      <h3>IPS Action Breakdown</h3>
+      <table id="tbl-actions">
+        <thead><tr><th>Action</th><th>Count</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h3>Attack Class Distribution</h3>
+      <table id="tbl-classes">
+        <thead><tr><th>Class</th><th>Count</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h3>Active Mitigations</h3>
+      <table id="tbl-mitigations">
+        <thead><tr><th>IP</th><th>Action</th><th>Expires</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Predict single flow ── -->
+  <section class="predict-section">
+    <h3>Test Single Flow Prediction</h3>
+    <div class="predict-form">
+      <label>Feature vector (comma-separated, 78 floats):</label>
+      <input type="text" id="feat-input" placeholder="0.0, 6.0, 80, 443, 512, 0, 1, …" />
+      <label>Source IP:</label>
+      <input type="text" id="src-ip-input" placeholder="192.168.1.100"/>
+      <label><input type="checkbox" id="enforce-chk"/> Enforce IPS action</label>
+      <button id="btn-predict">Classify</button>
+    </div>
+    <pre id="predict-result"></pre>
+  </section>
+
+  <!-- ── Evaluate model ── -->
+  <section class="predict-section">
+    <h3>Quick Evaluation (Synthetic Data)</h3>
+    <button id="btn-train">Train on Synthetic Data (10 epochs)</button>
+    <pre id="train-result"></pre>
+  </section>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
