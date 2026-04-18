@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SDN IoT AI-IDS/IPS</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">SDN IoT AI-IDS/IPS</span>
+    <a href="/dashboard" class="nav-link">Live Dashboard</a>
+    <a href="/api/v1/stats" class="nav-link" target="_blank">API Stats</a>
+  </nav>
+
+  <main class="hero">
+    <h1>AI-Powered Intrusion Detection &amp; Prevention</h1>
+    <p class="subtitle">
+      Real-time deep-learning IDS/IPS for Software-Defined Networking &amp; IoT environments.<br/>
+      Powered by CNN · Bi-LSTM · VAE ensemble with Ryu SDN controller enforcement.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3>CNN Classifier</h3>
+        <p>1-D convolutional network detects spatial attack patterns in flow feature vectors.</p>
+      </div>
+      <div class="card">
+        <h3>Bi-LSTM + Attention</h3>
+        <p>Temporal model captures multi-step attacks (slow DoS, reconnaissance) across flow sequences.</p>
+      </div>
+      <div class="card">
+        <h3>VAE Anomaly Detection</h3>
+        <p>Variational Autoencoder trained on normal traffic; high reconstruction error triggers alerts.</p>
+      </div>
+      <div class="card">
+        <h3>SDN Enforcement via Ryu</h3>
+        <p>Autonomous OpenFlow rule installation: block, rate-limit, mirror to IDS, or redirect to honeypot.</p>
+      </div>
+      <div class="card">
+        <h3>Snort Integration</h3>
+        <p>Tails Snort fast-alert logs; AI classifies alerts; auto-generates new Snort rules.</p>
+      </div>
+      <div class="card">
+        <h3>Suricata Integration</h3>
+        <p>Parses EVE JSON; extracts flow features for secondary AI classification.</p>
+      </div>
+    </div>
+
+    <a href="/dashboard" class="cta-btn">Open Live Dashboard →</a>
+  </main>
+
+  <footer>
+    <p>SDN IoT AI-IDS/IPS · Flask + PyTorch + Ryu · 2024</p>
+  </footer>
+</body>
+</html>
