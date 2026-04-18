@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Categories - Asset Management{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+<li class="breadcrumb-item active">Categories</li>
+{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-bold mb-0">Asset Categories</h4>
+    <a href="{% url 'category_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Category</a>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr><th>Name</th><th>Description</th><th>Assets</th><th>Created</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td class="fw-semibold">{{ cat.name }}</td>
+                    <td class="text-muted">{{ cat.description|default:'-'|truncatechars:60 }}</td>
+                    <td><span class="badge bg-primary-subtle text-primary">{{ cat.asset_count }}</span></td>
+                    <td class="small text-muted">{{ cat.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'category_edit' cat.pk %}" class="btn btn-sm btn-outline-warning btn-action"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'category_delete' cat.pk %}" class="btn btn-sm btn-outline-danger btn-action"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-tags fs-1 d-block mb-2"></i>No categories yet. <a href="{% url 'category_create' %}">Add one</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
