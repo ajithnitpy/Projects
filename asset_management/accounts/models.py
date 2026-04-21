@@ -19,6 +19,9 @@ class Role(models.Model):
     can_manage_users = models.BooleanField(default=False)
     can_manage_roles = models.BooleanField(default=False)
     can_view_logs = models.BooleanField(default=False)
+    can_upload_file = models.BooleanField(default=False)
+    can_delete_file = models.BooleanField(default=False)
+    can_create_repo = models.BooleanField(default=False)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -33,7 +36,6 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
     employee_id = models.CharField(max_length=50, blank=True)
-    # FK to Department — controls which department's assets this user sees
     department = models.ForeignKey(
         'assets.Department',
         on_delete=models.SET_NULL,
