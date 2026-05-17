@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title|default:"Dashboard" }} · Ryu SDN Controller GUI</title>
+  <link rel="stylesheet" href="{% static 'dashboard/css/style.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+</head>
+<body>
+<div class="app-shell">
+  <!-- ============== SIDEBAR ============== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">Ryu</div>
+      <div class="brand-sub">SDN Controller</div>
+    </div>
+
+    <div class="nav-section-title">NAVIGATION</div>
+    <nav class="side-nav">
+      <a href="{% url 'dashboard:index' %}" class="{% if active_nav == 'dashboard' %}active{% endif %}">
+        <span class="icon">▦</span> Dashboard
+      </a>
+      <a href="{% url 'dashboard:switches' %}" class="{% if active_nav == 'switches' %}active{% endif %}">
+        <span class="icon">⚙</span> Switches
+      </a>
+      <a href="{% url 'dashboard:hosts' %}" class="{% if active_nav == 'hosts' %}active{% endif %}">
+        <span class="icon">▣</span> Hosts
+      </a>
+      <a href="{% url 'dashboard:links' %}" class="{% if active_nav == 'links' %}active{% endif %}">
+        <span class="icon">⇄</span> Links
+      </a>
+      <a href="{% url 'dashboard:flows' %}" class="{% if active_nav == 'flows' %}active{% endif %}">
+        <span class="icon">≡</span> Flow Entries
+      </a>
+    </nav>
+
+    <div class="nav-section-title">CONTROLS</div>
+    <nav class="side-nav">
+      <a href="{% url 'dashboard:groups' %}" class="{% if active_nav == 'groups' %}active{% endif %}">
+        <span class="icon">◆</span> Groups
+      </a>
+      <a href="{% url 'dashboard:meters' %}" class="{% if active_nav == 'meters' %}active{% endif %}">
+        <span class="icon">▤</span> Meters
+      </a>
+      <a href="{% url 'dashboard:topology' %}" class="{% if active_nav == 'topology' %}active{% endif %}">
+        <span class="icon">⬢</span> Topology
+      </a>
+      <a href="{% url 'dashboard:threats' %}" class="{% if active_nav == 'threats' %}active{% endif %}">
+        <span class="icon">⚠</span> Threats
+      </a>
+      <a href="{% url 'dashboard:config' %}" class="{% if active_nav == 'config' %}active{% endif %}">
+        <span class="icon">✎</span> Config
+      </a>
+    </nav>
+
+    <div class="nav-section-title">SYSTEM</div>
+    <nav class="side-nav">
+      <a href="{% url 'dashboard:logs' %}" class="{% if active_nav == 'logs' %}active{% endif %}">
+        <span class="icon">▢</span> Logs
+      </a>
+      <a href="{% url 'dashboard:settings' %}" class="{% if active_nav == 'settings' %}active{% endif %}">
+        <span class="icon">✦</span> Settings
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      Ryu SDN Controller v4.34
+    </div>
+  </aside>
+
+  <!-- ============== MAIN ============== -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title">Ryu SDN Controller GUI</div>
+      <div class="topbar-right">
+        <div class="topbar-time" id="topbarTime">--:--:--</div>
+        <div class="topbar-status {% if controller_online %}online{% else %}offline{% endif %}">
+          <span class="dot"></span>
+          Controller Status: {% if controller_online %}Online{% else %}Offline{% endif %}
+        </div>
+        <div class="topbar-user">
+          <div class="avatar">{{ user.username|first|upper|default:"A" }}</div>
+          <div>{{ user.username|default:"admin" }}</div>
+          <a href="{% url 'logout' %}" class="logout">Logout</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="content">
+      {% block content %}{% endblock %}
+    </section>
+  </main>
+</div>
+
+<script>
+  // Clock in the topbar
+  function tick() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('topbarTime').textContent =
+      `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  }
+  tick();
+  setInterval(tick, 1000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

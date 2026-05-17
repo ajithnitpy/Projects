@@ -1,0 +1,25 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header"><h3>Switches</h3></div>
+  <div class="panel-body">
+    <table class="data-table">
+      <thead><tr><th>DPID</th><th>Name</th><th>Ports</th><th>Flows</th><th>Active</th><th>Last Seen</th></tr></thead>
+      <tbody>
+        {% for s in switches %}
+          <tr>
+            <td>{{ s.dpid }}</td>
+            <td>{{ s.name|default:"—" }}</td>
+            <td>{{ s.n_ports }}</td>
+            <td>{{ s.n_flows }}</td>
+            <td>{% if s.is_active %}<span class="badge info">Up</span>{% else %}<span class="badge critical">Down</span>{% endif %}</td>
+            <td>{{ s.last_seen|default:"—" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="muted">No switches discovered. Start Ryu and connect OVS instances.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

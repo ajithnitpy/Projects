@@ -1,0 +1,14 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<div class="panel"><div class="panel-header"><h3>Controller Configuration</h3></div>
+<div class="panel-body">
+<table class="data-table">
+  <tbody>
+    <tr><th>Ryu REST URL</th><td><code>{{ RYU_REST_URL }}</code></td></tr>
+    <tr><th>WebSocket URL</th><td><code>{{ RYU_WS_URL }}</code></td></tr>
+    <tr><th>GNN Threat Threshold</th><td>0.75</td></tr>
+    <tr><th>Mitigation Enabled</th><td>True</td></tr>
+  </tbody>
+</table>
+</div></div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header"><h3>Flow Entries</h3></div>
+  <div class="panel-body">
+    <table class="data-table">
+      <thead>
+        <tr><th>DPID</th><th>Table</th><th>Priority</th><th>Match</th><th>Actions</th><th>Packets</th><th>Bytes</th></tr>
+      </thead>
+      <tbody>
+        {% for f in flows %}
+          <tr>
+            <td>{{ f.dpid }}</td>
+            <td>{{ f.table_id|default:0 }}</td>
+            <td>{{ f.priority }}</td>
+            <td><code>{{ f.match }}</code></td>
+            <td><code>{{ f.actions }}</code></td>
+            <td>{{ f.packet_count|default:0 }}</td>
+            <td>{{ f.byte_count|default:0 }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="muted">No flow entries installed.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
