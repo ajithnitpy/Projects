@@ -1,0 +1,23 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header"><h3>Links</h3></div>
+  <div class="panel-body">
+    <table class="data-table">
+      <thead><tr><th>Source DPID</th><th>Src Port</th><th>Dest DPID</th><th>Dst Port</th></tr></thead>
+      <tbody>
+        {% for l in links %}
+          <tr>
+            <td>{{ l.src.dpid|default:l.src_dpid }}</td>
+            <td>{{ l.src.port_no|default:l.src_port }}</td>
+            <td>{{ l.dst.dpid|default:l.dst_dpid }}</td>
+            <td>{{ l.dst.port_no|default:l.dst_port }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="muted">No links discovered.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

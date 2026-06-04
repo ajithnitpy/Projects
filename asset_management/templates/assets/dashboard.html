@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Asset Management{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Dashboard</li>{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+{% if scope_dept %}
+<div class="alert d-flex align-items-center gap-3 mb-4" style="background:#e8f0fe;border:none;border-left:4px solid #1a73e8;border-radius:10px">
+    <i class="bi bi-building-check fs-4 text-primary"></i>
+    <div>
+        <strong class="text-primary">Department View: {{ scope_dept.name }}</strong>
+        <div class="small text-muted">You are viewing assets assigned to your department only.</div>
+    </div>
+</div>
+{% endif %}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Dashboard</h4>
+        <p class="text-muted mb-0 small">Welcome back, {{ user.get_full_name|default:user.username }}. Here's your asset overview.</p>
+    </div>
+    {% if user.is_superuser or user.profile.role.can_add_asset %}
+    <a href="{% url 'asset_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Add Asset
+    </a>
+    {% endif %}
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100" style="border-left-color:#1a73e8">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:#e8f0fe;color:#1a73e8"><i class="bi bi-archive"></i></div>
+                <div>
+                    <div class="stat-value text-primary">{{ total_assets }}</div>
+                    <div class="stat-label">Total Assets</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100" style="border-left-color:#16a34a">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:#dcfce7;color:#16a34a"><i class="bi bi-check-circle"></i></div>
+                <div>
+                    <div class="stat-value text-success">{{ working_assets }}</div>
+                    <div class="stat-label">Working</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100" style="border-left-color:#dc2626">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:#fee2e2;color:#dc2626"><i class="bi bi-x-circle"></i></div>
+                <div>
+                    <div class="stat-value text-danger">{{ condemned_assets }}</div>
+                    <div class="stat-label">Condemned</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100" style="border-left-color:#d97706">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:#fef3c7;color:#d97706"><i class="bi bi-exclamation-triangle"></i></div>
+                <div>
+                    <div class="stat-value text-warning">{{ obsolete_assets }}</div>
+                    <div class="stat-label">Obsolete</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100" style="border-left-color:#7c3aed">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:#ede9fe;color:#7c3aed"><i class="bi bi-trash"></i></div>
+                <div>
+                    <div class="stat-value" style="color:#7c3aed">{{ disposed_assets }}</div>
+                    <div class="stat-label">Disposed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100" style="border-left-color:#db2777">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:#fce7f3;color:#db2777"><i class="bi bi-pencil-square"></i></div>
+                <div>
+                    <div class="stat-value" style="color:#db2777">{{ write_off_assets }}</div>
+                    <div class="stat-label">Write Off</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100" style="border-left-color:#ea580c">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:#fff7ed;color:#ea580c"><i class="bi bi-shield-exclamation"></i></div>
+                <div>
+                    <div class="stat-value" style="color:#ea580c">{{ warranty_expiring_soon }}</div>
+                    <div class="stat-label">Warranty Expiring</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100" style="border-left-color:#6b7280">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:#f3f4f6;color:#6b7280"><i class="bi bi-shield-x"></i></div>
+                <div>
+                    <div class="stat-value text-secondary">{{ warranty_expired }}</div>
+                    <div class="stat-label">Warranty Expired</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-5">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold py-3">
+                <i class="bi bi-pie-chart me-2 text-primary"></i>Assets by Condition
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center" style="min-height:220px">
+                <canvas id="conditionChart" style="max-height:200px"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold py-3">
+                <i class="bi bi-bar-chart me-2 text-primary"></i>Assets by Category
+            </div>
+            <div class="card-body" style="min-height:220px">
+                <canvas id="categoryChart" style="max-height:200px"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold py-3">
+                <i class="bi bi-geo-alt me-2 text-primary"></i>Assets by Location
+            </div>
+            <div class="card-body" style="min-height:200px">
+                <canvas id="locationChart" style="max-height:180px"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold py-3">
+                <i class="bi bi-building me-2 text-primary"></i>Assets by Department
+            </div>
+            <div class="card-body" style="min-height:200px">
+                <canvas id="deptChart" style="max-height:180px"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+                <span class="fw-semibold"><i class="bi bi-archive me-2 text-primary"></i>Recent Assets</span>
+                <a href="{% url 'asset_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr><th>Inventory #</th><th>Name</th><th>Category</th><th>Condition</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for asset in recent_assets %}
+                        <tr>
+                            <td><a href="{% url 'asset_detail' asset.pk %}" class="text-decoration-none fw-semibold">{{ asset.inventory_number }}</a></td>
+                            <td class="text-truncate" style="max-width:150px">{{ asset.inventory_name }}</td>
+                            <td><span class="badge bg-light text-dark">{{ asset.category|default:'-' }}</span></td>
+                            <td>
+                                <span class="badge badge-{{ asset.condition }}">{{ asset.get_condition_display }}</span>
+                            </td>
+                            <td><span class="badge bg-secondary-subtle text-secondary">{{ asset.get_working_status_display }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted py-4">No assets found. <a href="{% url 'asset_create' %}">Add one</a></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+                <span class="fw-semibold"><i class="bi bi-journal-text me-2 text-primary"></i>Recent Activity</span>
+                {% if user.is_superuser or user.profile.role.can_view_logs %}
+                <a href="{% url 'activity_log_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                {% for log in recent_logs %}
+                <div class="d-flex align-items-start gap-3 px-3 py-2 border-bottom">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-1"
+                         style="width:32px;height:32px;font-size:0.8rem;font-weight:700;background:#e8f0fe;color:#1a73e8">
+                        {{ log.user.username|first|upper|default:'?' }}
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="small fw-semibold">{{ log.user.username|default:'System' }}</div>
+                        <div class="small text-muted">{{ log.get_action_display }} {{ log.model_name }}{% if log.object_repr %}: {{ log.object_repr|truncatechars:30 }}{% endif %}</div>
+                        <div class="text-muted" style="font-size:0.7rem">{{ log.timestamp|timesince }} ago</div>
+                    </div>
+                    <span class="badge {% if log.action == 'create' %}bg-success-subtle text-success{% elif log.action == 'delete' %}bg-danger-subtle text-danger{% elif log.action == 'update' %}bg-warning-subtle text-warning{% else %}bg-secondary-subtle text-secondary{% endif %}" style="font-size:0.65rem">
+                        {{ log.get_action_display }}
+                    </span>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4"><i class="bi bi-journal-x fs-3 d-block mb-2"></i>No activity yet</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const conditionData = {{ assets_by_condition|safe }};
+const categoryData = {{ assets_by_category|safe }};
+const locationData = {{ assets_by_location|safe }};
+const deptData = {{ assets_by_department|safe }};
+
+const COLORS = ['#1a73e8','#16a34a','#dc2626','#d97706','#7c3aed','#db2777','#0891b2','#65a30d'];
+const conditionLabels = {'working':'Working','write_off':'Write Off','condemned':'Condemned','obsolete':'Obsolete','disposed':'Disposed'};
+
+// Condition Doughnut
+if (conditionData.length) {
+    new Chart(document.getElementById('conditionChart'), {
+        type: 'doughnut',
+        data: {
+            labels: conditionData.map(d => conditionLabels[d.condition] || d.condition),
+            datasets: [{data: conditionData.map(d => d.count), backgroundColor: COLORS, borderWidth: 2}]
+        },
+        options: {responsive: true, plugins: {legend: {position: 'right', labels: {font: {size: 11}}}}}
+    });
+}
+
+// Category Bar
+if (categoryData.length) {
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'bar',
+        data: {
+            labels: categoryData.map(d => d.name),
+            datasets: [{label: 'Assets', data: categoryData.map(d => d.count), backgroundColor: '#1a73e8', borderRadius: 6}]
+        },
+        options: {responsive: true, plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true, ticks: {stepSize: 1}}}}
+    });
+}
+
+// Location Chart
+if (locationData.length) {
+    new Chart(document.getElementById('locationChart'), {
+        type: 'bar',
+        data: {
+            labels: locationData.map(d => d.name),
+            datasets: [{label: 'Assets', data: locationData.map(d => d.count), backgroundColor: '#16a34a', borderRadius: 6}]
+        },
+        options: {responsive: true, indexAxis: 'y', plugins: {legend: {display: false}}, scales: {x: {beginAtZero: true, ticks: {stepSize: 1}}}}
+    });
+}
+
+// Department Chart
+if (deptData.length) {
+    new Chart(document.getElementById('deptChart'), {
+        type: 'bar',
+        data: {
+            labels: deptData.map(d => d.name),
+            datasets: [{label: 'Assets', data: deptData.map(d => d.count), backgroundColor: '#7c3aed', borderRadius: 6}]
+        },
+        options: {responsive: true, indexAxis: 'y', plugins: {legend: {display: false}}, scales: {x: {beginAtZero: true, ticks: {stepSize: 1}}}}
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+# /etc/systemd/system/ryu-dashboard.service
+# Django (Daphne ASGI) service for the Ryu SDN dashboard on Ubuntu.
+#
+#   sudo cp deploy/ryu-dashboard.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now ryu-dashboard
+
+[Unit]
+Description=Ryu SDN Dashboard (Django + Daphne)
+After=network.target postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=ryu
+Group=www-data
+WorkingDirectory=/opt/ryu-dashboard
+EnvironmentFile=/opt/ryu-dashboard/.env
+ExecStart=/opt/ryu-dashboard/venv/bin/daphne -b 0.0.0.0 -p 8000 ryu_dashboard.asgi:application
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

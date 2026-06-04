@@ -1,0 +1,22 @@
+# ============================================================
+# Ryu controller container — runs the custom SDN security app
+# ============================================================
+FROM python:3.9-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential libffi-dev libssl-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+# Ryu pin: 4.34 (works with eventlet < 0.34)
+RUN pip install --no-cache-dir eventlet==0.30.2 ryu==4.34 requests==2.31.0
+
+WORKDIR /opt/ryu_apps
+COPY ryu_apps/ /opt/ryu_apps/
+
+# OF channel (switches) + REST + custom REST
+EXPOSE 6633 6653 8080 8081
+
+CMD ["ryu-manager", "--observe-links", \
+     "ryu.app.ofctl_rest", "ryu.app.rest_topology", \
+     "/opt/ryu_apps/sdn_security_controller.py", \
+     "--wsapi-host", "0.0.0.0", "--wsapi-port", "8080"]

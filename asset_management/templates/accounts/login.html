@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Login - Asset Management System{% endblock %}
+
+{% block auth_content %}
+<div class="min-vh-100 d-flex" style="background: linear-gradient(135deg, #1e2a3a 0%, #1a73e8 100%);">
+    <div class="m-auto" style="width: 100%; max-width: 420px; padding: 2rem;">
+        <div class="text-center mb-4">
+            <div class="mx-auto mb-3 rounded-circle bg-white d-flex align-items-center justify-content-center shadow" style="width:72px;height:72px;">
+                <i class="bi bi-box-seam text-primary fs-2"></i>
+            </div>
+            <h3 class="text-white fw-bold mb-1">AssetTrack</h3>
+            <p class="text-white-50 mb-0">Asset Management System</p>
+        </div>
+        <div class="card shadow-lg border-0" style="border-radius: 16px;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-1 text-dark">Sign In</h5>
+                <p class="text-muted small mb-4">Enter your credentials to access the system</p>
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                            <input type="text" name="username" class="form-control border-start-0 ps-0{% if form.username.errors %} is-invalid{% endif %}" placeholder="Enter username" value="{{ form.username.value|default:'' }}" required>
+                        </div>
+                        {% for error in form.username.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                            <input type="password" name="password" id="password" class="form-control border-start-0 border-end-0 ps-0{% if form.password.errors %} is-invalid{% endif %}" placeholder="Enter password" required>
+                            <button type="button" class="input-group-text bg-light" onclick="togglePwd()"><i class="bi bi-eye" id="pwd-icon"></i></button>
+                        </div>
+                        {% for error in form.password.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger py-2 small">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                    </button>
+                </form>
+            </div>
+        </div>
+        <p class="text-center text-white-50 small mt-3 mb-0">
+            &copy; 2024 AssetTrack &mdash; Secure Asset Management
+        </p>
+    </div>
+</div>
+<script>
+function togglePwd() {
+    const p = document.getElementById('password');
+    const i = document.getElementById('pwd-icon');
+    if (p.type === 'password') { p.type = 'text'; i.className = 'bi bi-eye-slash'; }
+    else { p.type = 'password'; i.className = 'bi bi-eye'; }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<div class="kpi-row" style="grid-template-columns:repeat(2,1fr)">
+  <div class="kpi-card">
+    <div class="kpi-icon icon-red">⚠</div>
+    <div class="kpi-body">
+      <div class="kpi-label">Active Threats</div>
+      <div class="kpi-value">{{ n_active }}</div>
+    </div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon icon-green">✓</div>
+    <div class="kpi-body">
+      <div class="kpi-label">Mitigated</div>
+      <div class="kpi-value">{{ n_mitigated }}</div>
+    </div>
+  </div>
+</div>
+<div class="panel">
+  <div class="panel-header"><h3>GNN-Detected Threats</h3></div>
+  <div class="panel-body">
+    <table class="data-table">
+      <thead><tr><th>Time</th><th>Type</th><th>Source IP</th><th>Dest IP</th><th>Confidence</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for t in threats %}
+          <tr>
+            <td>{{ t.timestamp|date:"H:i:s" }}</td>
+            <td><span class="badge critical">{{ t.threat_type }}</span></td>
+            <td>{{ t.src_ip }}</td>
+            <td>{{ t.dst_ip|default:"—" }}</td>
+            <td>{{ t.confidence|floatformat:3 }}</td>
+            <td>
+              {% if t.status == 'mitigated' %}<span class="badge info">Mitigated</span>
+              {% elif t.status == 'false_positive' %}<span class="badge">FP</span>
+              {% else %}<span class="badge warning">Detected</span>{% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="muted">No threats flagged. GNN inference engine running.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

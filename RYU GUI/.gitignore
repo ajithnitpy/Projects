@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+.env
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+*.log
+.idea/
+.vscode/
+.DS_Store
+gnn_security/checkpoints/*.pt
+data/

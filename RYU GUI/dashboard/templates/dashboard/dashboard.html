@@ -1,0 +1,280 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- KPI CARDS -->
+<div class="kpi-row">
+  <div class="kpi-card">
+    <div class="kpi-icon icon-blue">⚙</div>
+    <div class="kpi-body">
+      <div class="kpi-label">Switches</div>
+      <div class="kpi-value">{{ kpi_switches }}</div>
+      <div class="kpi-sub up">▲ Active</div>
+    </div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon icon-green">▣</div>
+    <div class="kpi-body">
+      <div class="kpi-label">Hosts</div>
+      <div class="kpi-value">{{ kpi_hosts }}</div>
+      <div class="kpi-sub up">▲ Connected</div>
+    </div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon icon-purple">⇄</div>
+    <div class="kpi-body">
+      <div class="kpi-label">Links</div>
+      <div class="kpi-value">{{ kpi_links }}</div>
+      <div class="kpi-sub up">▲ Up</div>
+    </div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon icon-orange">≡</div>
+    <div class="kpi-body">
+      <div class="kpi-label">Flow Entries</div>
+      <div class="kpi-value">{{ kpi_flows }}</div>
+      <div class="kpi-sub">Total Entries</div>
+    </div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon icon-pink">⚡</div>
+    <div class="kpi-body">
+      <div class="kpi-label">Packets/s</div>
+      <div class="kpi-value">{{ kpi_packets }}</div>
+      <div class="kpi-sub up">▲ Live</div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW: TOPOLOGY + PIPELINE -->
+<div class="grid grid-2">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Network Topology</h3>
+      <div class="panel-legend">
+        <span class="lg-dot dot-blue"></span> Ryu Controller
+        <span class="lg-dot dot-purple"></span> OpenFlow Switch
+        <span class="lg-dot dot-green"></span> Host
+      </div>
+    </div>
+    <div class="panel-body">
+      <svg id="topology-svg" viewBox="0 0 700 320" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Pipeline Architecture <span class="muted">(Ryu + OpenFlow)</span></h3>
+    </div>
+    <div class="panel-body">
+      <div class="pipeline">
+        <div class="pipe-step blue">
+          <div class="pipe-step-title">Packet In</div>
+          <div class="pipe-step-desc">Switch sends packet to controller</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step purple">
+          <div class="pipe-step-title">Flow</div>
+          <div class="pipe-step-desc">Match against pipeline tables</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step orange">
+          <div class="pipe-step-title">Match</div>
+          <div class="pipe-step-desc">OpenFlow match fields</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step pink">
+          <div class="pipe-step-title">Action</div>
+          <div class="pipe-step-desc">Forward, drop, modify</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step green">
+          <div class="pipe-step-title">Flow Table</div>
+          <div class="pipe-step-desc">Install or update entry</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step teal">
+          <div class="pipe-step-title">Packet Out</div>
+          <div class="pipe-step-desc">Egress to destination port</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RYU INTERNAL ARCHITECTURE -->
+<div class="panel">
+  <div class="panel-header">
+    <h3>Ryu Internal Architecture</h3>
+  </div>
+  <div class="panel-body">
+    <div class="arch-row">
+      <div class="arch-card blue">
+        <div class="arch-icon">▦</div>
+        <div class="arch-name">Apps Layer</div>
+        <div class="arch-desc">Custom Python apps (simple_switch, security, topology)</div>
+      </div>
+      <div class="arch-card purple">
+        <div class="arch-icon">⚙</div>
+        <div class="arch-name">Event Engine</div>
+        <div class="arch-desc">Dispatches OF events via observe_event</div>
+      </div>
+      <div class="arch-card orange">
+        <div class="arch-icon">⇄</div>
+        <div class="arch-name">OFP Protocol</div>
+        <div class="arch-desc">OpenFlow 1.0–1.5 parser & encoder</div>
+      </div>
+      <div class="arch-card pink">
+        <div class="arch-icon">▢</div>
+        <div class="arch-name">Datapath Mgr</div>
+        <div class="arch-desc">Manages connected switches</div>
+      </div>
+      <div class="arch-card green">
+        <div class="arch-icon">⬢</div>
+        <div class="arch-name">Northbound API</div>
+        <div class="arch-desc">REST / WSGI / WebSocket out to apps</div>
+      </div>
+      <div class="arch-card teal">
+        <div class="arch-icon">✦</div>
+        <div class="arch-name">Controller Core</div>
+        <div class="arch-desc">Reactor loop, threads, eventlet</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW: RECENT EVENTS + CONNECTION FLOW -->
+<div class="grid grid-2">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Recent Events</h3>
+      <a href="{% url 'dashboard:logs' %}" class="link">View All</a>
+    </div>
+    <div class="panel-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Type</th>
+            <th>Source</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for event in recent_events %}
+          <tr>
+            <td>{{ event.timestamp|date:"H:i:s" }}</td>
+            <td><span class="badge {{ event.severity }}">{{ event.get_event_type_display }}</span></td>
+            <td>{{ event.source }}</td>
+            <td>{{ event.description|truncatechars:60 }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="muted">No events recorded yet. Connect a Ryu controller to populate.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Connection Flow</h3>
+    </div>
+    <div class="panel-body">
+      <div class="conn-flow">
+        <div class="conn-step blue">
+          <div class="conn-icon">①</div>
+          <div class="conn-title">Hello</div>
+          <div class="conn-desc">Version negotiation</div>
+        </div>
+        <div class="conn-arrow">→</div>
+        <div class="conn-step purple">
+          <div class="conn-icon">②</div>
+          <div class="conn-title">Features Request</div>
+          <div class="conn-desc">DPID, capabilities</div>
+        </div>
+        <div class="conn-arrow">→</div>
+        <div class="conn-step orange">
+          <div class="conn-icon">③</div>
+          <div class="conn-title">Set Config</div>
+          <div class="conn-desc">Buffer, miss send length</div>
+        </div>
+        <div class="conn-arrow">→</div>
+        <div class="conn-step pink">
+          <div class="conn-icon">④</div>
+          <div class="conn-title">Flow Setup</div>
+          <div class="conn-desc">Install default rules</div>
+        </div>
+        <div class="conn-arrow">→</div>
+        <div class="conn-step green">
+          <div class="conn-icon">⑤</div>
+          <div class="conn-title">Operational</div>
+          <div class="conn-desc">Live traffic + GNN inference</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Topology data from server, with sensible fallback for demo
+  let TOPOLOGY = {{ topology_json|safe|default:"null" }};
+  if (!TOPOLOGY || !TOPOLOGY.nodes || TOPOLOGY.nodes.length === 0) {
+    TOPOLOGY = {
+      nodes: [
+        {id: 'ctrl', label: 'Ryu Controller', type: 'controller', x: 350, y: 40},
+        {id: 's1', label: 'S1', type: 'switch', x: 180, y: 130},
+        {id: 's2', label: 'S2', type: 'switch', x: 350, y: 130},
+        {id: 's3', label: 'S3', type: 'switch', x: 520, y: 130},
+        {id: 'h1', label: 'H1', type: 'host', x: 100, y: 240},
+        {id: 'h2', label: 'H2', type: 'host', x: 200, y: 240},
+        {id: 'h3', label: 'H3', type: 'host', x: 300, y: 240},
+        {id: 'h4', label: 'H4', type: 'host', x: 400, y: 240},
+        {id: 'h5', label: 'H5', type: 'host', x: 500, y: 240},
+        {id: 'h6', label: 'H6', type: 'host', x: 600, y: 240},
+      ],
+      edges: [
+        {source: 'ctrl', target: 's1', kind: 'control'},
+        {source: 'ctrl', target: 's2', kind: 'control'},
+        {source: 'ctrl', target: 's3', kind: 'control'},
+        {source: 's1', target: 'h1'}, {source: 's1', target: 'h2'},
+        {source: 's2', target: 'h3'}, {source: 's2', target: 'h4'},
+        {source: 's3', target: 'h5'}, {source: 's3', target: 'h6'},
+        {source: 's1', target: 's2'}, {source: 's2', target: 's3'},
+      ]
+    };
+  }
+
+  const svg = d3.select('#topology-svg');
+  const nodeById = Object.fromEntries(TOPOLOGY.nodes.map(n => [n.id, n]));
+
+  // edges
+  svg.selectAll('line.edge').data(TOPOLOGY.edges).enter().append('line')
+    .attr('class', d => 'edge ' + (d.kind === 'control' ? 'edge-control' : 'edge-data'))
+    .attr('x1', d => nodeById[d.source].x).attr('y1', d => nodeById[d.source].y)
+    .attr('x2', d => nodeById[d.target].x).attr('y2', d => nodeById[d.target].y)
+    .attr('stroke', d => d.kind === 'control' ? '#7c5cff' : '#3fa9f5')
+    .attr('stroke-dasharray', d => d.kind === 'control' ? '4 4' : null)
+    .attr('stroke-width', 1.5);
+
+  // nodes
+  const node = svg.selectAll('g.node').data(TOPOLOGY.nodes).enter().append('g')
+    .attr('class', d => 'node node-' + d.type)
+    .attr('transform', d => `translate(${d.x},${d.y})`);
+
+  node.append('circle')
+    .attr('r', d => d.type === 'controller' ? 26 : d.type === 'switch' ? 20 : 14)
+    .attr('fill', d => d.type === 'controller' ? '#3b82f6'
+                       : d.type === 'switch' ? '#8b5cf6'
+                       : '#22c55e')
+    .attr('stroke', '#0f172a').attr('stroke-width', 2);
+  node.append('text')
+    .attr('text-anchor', 'middle').attr('dy', 4)
+    .attr('fill', 'white').attr('font-size', d => d.type === 'controller' ? 11 : 10)
+    .text(d => d.label);
+</script>
+{% endblock %}

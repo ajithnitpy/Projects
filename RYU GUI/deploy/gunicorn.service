@@ -1,0 +1,20 @@
+# Alternative (sync) WSGI service if you prefer Gunicorn over Daphne.
+# Note: Gunicorn doesn't support WebSockets — only use this if you don't need
+# the live-update WebSocket consumers.
+
+[Unit]
+Description=Ryu SDN Dashboard (Gunicorn / WSGI)
+After=network.target
+
+[Service]
+Type=simple
+User=ryu
+WorkingDirectory=/opt/ryu-dashboard
+EnvironmentFile=/opt/ryu-dashboard/.env
+ExecStart=/opt/ryu-dashboard/venv/bin/gunicorn ryu_dashboard.wsgi:application \
+    --workers 3 --bind 0.0.0.0:8000 --access-logfile - --error-logfile -
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

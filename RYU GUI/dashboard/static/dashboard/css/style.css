@@ -1,0 +1,280 @@
+/* ============================================================
+   Ryu SDN Controller GUI — Dashboard styles
+   ============================================================ */
+
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #f4f6fb;
+  --panel: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+
+  --sidebar-bg: #0f172a;
+  --sidebar-text: #cbd5e1;
+  --sidebar-active: #1e293b;
+  --sidebar-accent: #3b82f6;
+
+  --blue: #3b82f6;
+  --green: #22c55e;
+  --purple: #8b5cf6;
+  --orange: #f59e0b;
+  --pink: #ec4899;
+  --teal: #14b8a6;
+  --red: #ef4444;
+}
+
+html, body {
+  margin: 0; padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  background: var(--bg); color: var(--text);
+  font-size: 14px;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ---------- Layout ---------- */
+.app-shell { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 220px; background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 18px 0 14px;
+  display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh;
+}
+
+.brand { padding: 0 18px 18px; border-bottom: 1px solid #1e293b; margin-bottom: 12px; }
+.brand-logo {
+  font-size: 22px; font-weight: 700; color: white;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.brand-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+.nav-section-title {
+  font-size: 10px; font-weight: 600; letter-spacing: 1px;
+  color: #475569; padding: 12px 18px 6px;
+}
+
+.side-nav { display: flex; flex-direction: column; }
+.side-nav a {
+  padding: 9px 18px; display: flex; gap: 10px; align-items: center;
+  font-size: 13px; color: var(--sidebar-text); border-left: 3px solid transparent;
+  transition: background .15s, border-color .15s;
+}
+.side-nav a:hover { background: #1e293b; }
+.side-nav a.active {
+  background: var(--sidebar-active);
+  color: white;
+  border-left-color: var(--sidebar-accent);
+}
+.side-nav .icon {
+  width: 18px; text-align: center; color: #94a3b8;
+}
+.side-nav a.active .icon { color: var(--sidebar-accent); }
+
+.sidebar-footer {
+  margin-top: auto; padding: 12px 18px;
+  font-size: 11px; color: #475569; border-top: 1px solid #1e293b;
+}
+
+/* ---------- Main / topbar ---------- */
+.main { flex: 1; min-width: 0; }
+
+.topbar {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 5;
+}
+.topbar-title { font-size: 16px; font-weight: 600; }
+.topbar-right { display: flex; align-items: center; gap: 22px; }
+.topbar-time { font-family: "SF Mono", Consolas, monospace; color: var(--muted); }
+
+.topbar-status {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 12px;
+  background: #ecfdf5; color: #047857; font-size: 12px; font-weight: 500;
+}
+.topbar-status .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
+.topbar-status.offline { background: #fef2f2; color: #b91c1c; }
+.topbar-status.offline .dot { background: var(--red); }
+
+.topbar-user { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white; display: grid; place-items: center; font-weight: 600;
+}
+.logout {
+  font-size: 12px; color: var(--muted);
+  padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px;
+}
+
+.content { padding: 22px; }
+
+/* ---------- KPI cards ---------- */
+.kpi-row {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 18px;
+}
+.kpi-card {
+  background: white; border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; display: flex; align-items: center; gap: 12px;
+}
+.kpi-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: grid; place-items: center; font-size: 20px; color: white;
+}
+.icon-blue   { background: #3b82f6; }
+.icon-green  { background: #22c55e; }
+.icon-purple { background: #8b5cf6; }
+.icon-orange { background: #f59e0b; }
+.icon-pink   { background: #ec4899; }
+.icon-teal   { background: #14b8a6; }
+.icon-red    { background: #ef4444; }
+
+.kpi-label { font-size: 12px; color: var(--muted); }
+.kpi-value { font-size: 24px; font-weight: 700; line-height: 1.1; }
+.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.kpi-sub.up { color: #16a34a; }
+.kpi-sub.down { color: var(--red); }
+
+/* ---------- Panels ---------- */
+.grid { display: grid; gap: 18px; margin-bottom: 18px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+.panel {
+  background: white; border: 1px solid var(--border); border-radius: 12px;
+  margin-bottom: 18px; overflow: hidden;
+}
+.panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+}
+.panel-header h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.panel-header .muted { color: var(--muted); font-weight: 400; }
+.panel-body { padding: 16px 18px; }
+
+.panel-legend { font-size: 11px; color: var(--muted); display: flex; gap: 12px; align-items: center; }
+.lg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.dot-blue { background: var(--blue); }
+.dot-purple { background: var(--purple); }
+.dot-green { background: var(--green); }
+.dot-orange { background: var(--orange); }
+
+.link { color: var(--blue); font-size: 12px; }
+
+/* ---------- Topology SVG ---------- */
+#topology-svg { width: 100%; height: 320px; }
+.edge { stroke-linecap: round; }
+
+/* ---------- Pipeline ---------- */
+.pipeline {
+  display: flex; align-items: stretch; gap: 6px; flex-wrap: wrap;
+}
+.pipe-step {
+  flex: 1 1 14%; min-width: 100px; padding: 10px 8px; border-radius: 10px;
+  color: white; text-align: center;
+}
+.pipe-step.blue   { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.pipe-step.purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.pipe-step.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.pipe-step.pink   { background: linear-gradient(135deg, #ec4899, #be185d); }
+.pipe-step.green  { background: linear-gradient(135deg, #22c55e, #15803d); }
+.pipe-step.teal   { background: linear-gradient(135deg, #14b8a6, #0f766e); }
+.pipe-step-title { font-weight: 700; font-size: 13px; }
+.pipe-step-desc { font-size: 10px; opacity: 0.9; margin-top: 4px; }
+.pipe-arrow {
+  align-self: center; color: var(--muted); font-size: 16px;
+}
+
+/* ---------- Architecture cards ---------- */
+.arch-row {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+}
+.arch-card {
+  border-radius: 10px; padding: 12px; color: white;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.arch-card.blue   { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.arch-card.purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.arch-card.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.arch-card.pink   { background: linear-gradient(135deg, #ec4899, #be185d); }
+.arch-card.green  { background: linear-gradient(135deg, #22c55e, #15803d); }
+.arch-card.teal   { background: linear-gradient(135deg, #14b8a6, #0f766e); }
+.arch-icon { font-size: 18px; }
+.arch-name { font-weight: 700; font-size: 13px; }
+.arch-desc { font-size: 11px; opacity: 0.92; line-height: 1.35; }
+
+/* ---------- Connection flow ---------- */
+.conn-flow { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.conn-step {
+  flex: 1 1 16%; min-width: 90px; border-radius: 10px;
+  padding: 12px 8px; color: white; text-align: center;
+}
+.conn-step.blue   { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.conn-step.purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.conn-step.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.conn-step.pink   { background: linear-gradient(135deg, #ec4899, #be185d); }
+.conn-step.green  { background: linear-gradient(135deg, #22c55e, #15803d); }
+.conn-icon { font-size: 18px; font-weight: 700; }
+.conn-title { font-weight: 700; font-size: 12px; margin-top: 2px; }
+.conn-desc { font-size: 10px; opacity: 0.9; margin-top: 2px; }
+.conn-arrow { color: var(--muted); font-size: 18px; }
+
+/* ---------- Tables ---------- */
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.data-table th, .data-table td {
+  text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--border);
+}
+.data-table th {
+  font-weight: 600; color: var(--muted); background: #f9fafb; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.muted { color: var(--muted); }
+
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  background: #e0e7ff; color: #3730a3;
+}
+.badge.info     { background: #dbeafe; color: #1d4ed8; }
+.badge.warning  { background: #fef3c7; color: #92400e; }
+.badge.critical { background: #fee2e2; color: #991b1b; }
+
+/* ---------- Auth ---------- */
+.auth-wrap {
+  min-height: 100vh; display: grid; place-items: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+.auth-card {
+  background: white; padding: 30px; border-radius: 12px;
+  width: 360px; box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+}
+.auth-card h1 { margin: 0 0 18px; font-size: 20px; }
+.auth-card input {
+  width: 100%; padding: 10px 12px; margin-bottom: 12px;
+  border: 1px solid var(--border); border-radius: 8px; font-size: 14px;
+}
+.auth-card button {
+  width: 100%; padding: 11px; border-radius: 8px; border: none;
+  background: var(--blue); color: white; font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1280px) {
+  .kpi-row { grid-template-columns: repeat(5, 1fr); }
+  .arch-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 980px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .arch-row { grid-template-columns: repeat(2, 1fr); }
+  .sidebar { position: fixed; transform: translateX(-100%); }
+}

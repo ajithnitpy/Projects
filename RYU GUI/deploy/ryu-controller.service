@@ -1,0 +1,24 @@
+# /etc/systemd/system/ryu-controller.service
+# Custom Ryu SDN security controller on Ubuntu.
+#
+#   sudo cp deploy/ryu-controller.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now ryu-controller
+
+[Unit]
+Description=Ryu SDN Security Controller
+After=network.target
+
+[Service]
+Type=simple
+User=ryu
+WorkingDirectory=/opt/ryu-dashboard
+ExecStart=/opt/ryu-dashboard/venv/bin/ryu-manager --observe-links \
+    ryu.app.ofctl_rest ryu.app.rest_topology \
+    /opt/ryu-dashboard/ryu_apps/sdn_security_controller.py \
+    --wsapi-host 0.0.0.0 --wsapi-port 8080
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

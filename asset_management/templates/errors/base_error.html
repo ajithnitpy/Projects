@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block error_title %}Error{% endblock %} - AssetTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e2a3a 0%, #1a73e8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .error-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem 2.5rem;
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .error-code {
+            font-size: 6rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.2rem;
+        }
+        .btn-home {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+        .btn-home:hover { background: #1557b0; color: white; }
+        .btn-back {
+            border: 2px solid #e2e8f0;
+            color: #64748b;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+        .btn-back:hover { border-color: #94a3b8; color: #334155; }
+        .brand {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .brand-icon {
+            width: 36px; height: 36px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="brand">
+        <div class="brand-icon"><i class="bi bi-box-seam"></i></div>
+        AssetTrack
+    </a>
+
+    <div class="error-card">
+        <div class="error-icon" style="background:{% block icon_bg %}#fee2e2{% endblock %}; color:{% block icon_color %}#dc2626{% endblock %}">
+            <i class="bi bi-{% block icon %}exclamation-triangle{% endblock %}"></i>
+        </div>
+
+        <div class="error-code">{% block code %}Error{% endblock %}</div>
+        <h4 class="fw-bold mt-2 mb-2">{% block heading %}Something went wrong{% endblock %}</h4>
+        <p class="text-muted mb-4">{% block description %}An unexpected error occurred. Please try again.{% endblock %}</p>
+
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="javascript:history.back()" class="btn-back">
+                <i class="bi bi-arrow-left me-1"></i>Go Back
+            </a>
+            <a href="/" class="btn-home">
+                <i class="bi bi-house me-1"></i>Go to Home
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
